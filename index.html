@@ -26,9 +26,23 @@
         padding: 8px;
         font-size: 16px;
       }
+
+      .dollars {
+        margin-left: auto;
+        margin-right: auto;
+        width: 30%;
+        transition: transform 0.5s;
+      }
     </style>
   </head>
   <body>
+    <h1>
+      buy low sell high!!
+    </h1>
+    <img src="bigmoney.gif" class="dollars">
+    <img src="bigmoney.gif" class="dollars">
+    <img src="bigmoney.gif" class="dollars">
+    <br>
     <label for="stockSelect">Choose a stock:</label>
     <select id="stockSelect">
       <option value="AAPL">Apple (AAPL)</option>
@@ -76,6 +90,25 @@
         const labels = Object.keys(historicalData).sort().slice(-100);
         const prices = labels.map(date => parseFloat(historicalData[date]["4. close"]));
 
+      function getColor(stock, prices, alpha = 1) {
+          const colors = {
+            "AAPL": `rgba(255, 99, 132, ${alpha})`, // Red
+            "TSLA": `rgba(54, 162, 235, ${alpha})`, // Blue
+            "MSFT": `rgba(75, 192, 192, ${alpha})`, // Teal
+            "AMZN": `rgba(255, 159, 64, ${alpha})`, // Orange
+            "GOOG": `rgba(153, 102, 255, ${alpha})` // Purple
+          };
+
+          if (stock in colors) {
+            return colors[stock];
+          } 
+          else {
+            const trend = prices[prices.length - 1] - prices[0];
+            return trend >= 0 ? `rgba(0, 200, 0, ${alpha})` : `rgba(200, 0, 0, ${alpha})`;
+          }
+        }
+
+
         const ctx = document.getElementById('stockChart').getContext('2d');
         if (chart) chart.destroy();
 
@@ -89,6 +122,7 @@
               borderColor: 'green',
               fill: false,
             }]
+
           },
           options: {
             responsive: true,
