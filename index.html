@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>buy low sell high</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+
+      canvas {
+        width: 90vw;
+        height: 50vh;
+        max-width: 1000px;
+        max-height: 500px;
+        margin: auto;
+        display: block;
+      }
+
+      select,
+      button {
+        margin: 10px;
+        padding: 8px;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="stockSelect">Choose a stock:</label>
+    <select id="stockSelect">
+      <option value="AAPL">Apple (AAPL)</option>
+      <option value="TSLA">Tesla (TSLA)</option>
+      <option value="MSFT">Microsoft (MSFT)</option>
+      <option value="AMZN">Amazon (AMZN)</option>
+      <option value="GOOG">Google (GOOG)</option>
+    </select>
+    <button onclick="fetchData()">Get</button>
+
+    <canvas id="stockChart"></canvas>
+
+    <script>
+      const apiKey = "cueg1ehr01qkqnpf3vugcueg1ehr01qkqnpf3vv0";
+      let chart;
+      let storedData = [];
+
+      async function fetchData() {
+        const stockSymbol = document.getElementById("stockSelect").value;
+        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${stockSymbol}&apikey=${apiKey}`;
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data["Time Series (Daily)"]) {
+            const historicalData = data["Time Series (Daily)"];
+            storeData(historicalData);
+            updateChart(historicalData, stockSymbol);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+
+      function storeData(historicalData) {
+        const labels = Object.keys(historicalData).sort().slice(-100);
+        storedData = labels.map(date => ({
+          date: date,
+          price: parseFloat(historicalData[date]["4. close"]),
+        }));
+      }
+
+      function updateChart(historicalData, stockSymbol) {
+        const labels = Object.keys(historicalData).sort().slice(-100);
+        const prices = labels.map(date => parseFloat(historicalData[date]["4. close"]));
+
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `${stockSymbol} Closing Price`,
+              data: prices,
+              borderColor: 'green',
+              fill: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Price (USD)'
+                }
+              }
+            },
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
