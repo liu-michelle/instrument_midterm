@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>buy low sell high</title>
+    <title>beat the market</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
         text-align: center;
+        background-color: rgb(0, 72, 0);
+        color: white;
       }
 
       canvas {
@@ -27,18 +29,24 @@
         font-size: 16px;
       }
 
+      h1 {
+        text-decoration: underline;
+        color: red;
+        font-size: 6vw;
+        border: 10px double rgb(156, 0, 0);
+      }
+
       .dollars {
         margin-left: auto;
         margin-right: auto;
         width: 30%;
         transition: transform 0.5s;
+        border: 10px double gold;
       }
     </style>
   </head>
   <body>
-    <h1>
-      buy low sell high!!
-    </h1>
+    <h1>💰💵BEAT THE MARKET💵💰</h1>
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
@@ -56,59 +64,51 @@
     <canvas id="stockChart"></canvas>
 
     <script>
-      const apiKey = "cueg1ehr01qkqnpf3vugcueg1ehr01qkqnpf3vv0";
       let chart;
       let storedData = [];
 
       async function fetchData() {
         const stockSymbol = document.getElementById("stockSelect").value;
-        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${stockSymbol}&apikey=${apiKey}`;
+        const corsProxy = "https://corsproxy.io/?";
+        const yahooURL = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}?interval=1d&range=3mo`;
 
         try {
-          const response = await fetch(url);
+          const response = await fetch(corsProxy + yahooURL);
           const data = await response.json();
 
-          if (data["Time Series (Daily)"]) {
-            const historicalData = data["Time Series (Daily)"];
-            storeData(historicalData);
-            updateChart(historicalData, stockSymbol);
+          if (data.chart && data.chart.result) {
+            const result = data.chart.result[0];
+            const timestamps = result.timestamp;
+            const prices = result.indicators.quote[0].close;
+
+            updateChart(timestamps, prices, stockSymbol);
+          } else {
+            console.error("Invalid Yahoo Finance response:", data);
+            alert("Error fetching stock data. Please try again later.");
           }
         } catch (error) {
-          console.error("Error:", error);
+          console.error("Network error:", error);
+          alert("Failed to fetch data. Check your internet connection.");
         }
       }
-
-      function storeData(historicalData) {
-        const labels = Object.keys(historicalData).sort().slice(-100);
-        storedData = labels.map(date => ({
-          date: date,
-          price: parseFloat(historicalData[date]["4. close"]),
-        }));
-      }
-
-      function updateChart(historicalData, stockSymbol) {
-        const labels = Object.keys(historicalData).sort().slice(-100);
-        const prices = labels.map(date => parseFloat(historicalData[date]["4. close"]));
 
       function getColor(stock, prices, alpha = 1) {
-          const colors = {
-            "AAPL": `rgba(255, 99, 132, ${alpha})`, // Red
-            "TSLA": `rgba(54, 162, 235, ${alpha})`, // Blue
-            "MSFT": `rgba(75, 192, 192, ${alpha})`, // Teal
-            "AMZN": `rgba(255, 159, 64, ${alpha})`, // Orange
-            "GOOG": `rgba(153, 102, 255, ${alpha})` // Purple
-          };
+        const colors = {
+          "AAPL": `rgb(235, 52, 67)`,
+          "TSLA": `rgb(52, 216, 235)`,
+          "MSFT": `rgb(43, 61, 255)`,
+          "AMZN": `rgb(227, 97, 16)`,
+          "GOOG": `rgb(43, 204, 18)`,
+        };
 
-          if (stock in colors) {
-            return colors[stock];
-          } 
-          else {
-            const trend = prices[prices.length - 1] - prices[0];
-            return trend >= 0 ? `rgba(0, 200, 0, ${alpha})` : `rgba(200, 0, 0, ${alpha})`;
-          }
+
+        if (colors[stock]) {
+          return colors[stock];
         }
+      }
 
-
+      function updateChart(timestamps, prices, stockSymbol) {
+        const labels = timestamps.map(ts => new Date(ts * 1000).toLocaleDateString());
         const ctx = document.getElementById('stockChart').getContext('2d');
         if (chart) chart.destroy();
 
@@ -119,28 +119,48 @@
             datasets: [{
               label: `${stockSymbol} Closing Price`,
               data: prices,
-              borderColor: 'green',
+              borderColor: getColor(stockSymbol, prices),
               fill: false,
             }]
-
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
               x: {
+                ticks: {
+                  color: 'white'
+                },
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.2)'
+                },
                 title: {
                   display: true,
-                  text: 'Date'
+                  text: 'Date',
+                  color: 'white'
                 }
               },
               y: {
+                ticks: {
+                  color: 'white'
+                },
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.2)'
+                },
                 title: {
                   display: true,
-                  text: 'Price (USD)'
+                  text: 'Price (USD)',
+                  color: 'white'
                 }
               }
             },
+            plugins: {
+              legend: {
+                labels: {
+                  color: 'white'
+                }
+              }
+            }
           }
         });
       }
