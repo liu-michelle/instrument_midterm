@@ -80,7 +80,12 @@
     <button onclick="fetchData()">☞ PLAY ☜</button>
 
     <canvas id="stockChart"></canvas>
-
+    
+    <script src="https://unpkg.com/tone"></script>
+    <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js?v=1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://algorithmicmusic.online/js/create-spectrum.js"></script>
+    <script src="https://algorithmicmusic.online/js/create-waveform.js"></script>
     <script>
       let chart;
       let storedData = [];
@@ -100,12 +105,8 @@
             const prices = result.indicators.quote[0].close;
 
             updateChart(timestamps, prices, stockSymbol);
-          } else {
-            console.error("Invalid Yahoo Finance response:", data);
-            alert("Error fetching stock data. Please try again later.");
           }
         } catch (error) {
-          console.error("Network error:", error);
           alert("Failed to fetch data. Check your internet connection.");
         }
       }
