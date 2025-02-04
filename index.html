@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BEAT THE MARKET</title>
+    <title>$BEAT THE MARKET$</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: Verdana, sans-serif;
         text-align: center;
         background-image: url(10081437.jpg);
         color: white;
@@ -27,20 +27,20 @@
         padding: 8px;
         font-size: 16px;
       }
-      
-      select{
+
+      select {
         margin: 10px;
         padding: 8px;
         font-size: 16px;
       }
-      
+
       button:hover {
         transform: scale(1.1);
         text-decoration: underline;
         color: red;
         background-color: gold;
       }
-      
+
       select:hover {
         transform: scale(1.1);
         text-decoration: underline;
@@ -50,14 +50,14 @@
       h1 {
         text-decoration: underline;
         color: red;
-        font-size: 6vw;
+        font-size: 5vw;
         border: 10px solid rgb(156, 0, 0);
       }
 
       .dollars {
         margin-left: auto;
         margin-right: auto;
-        width: 30%;
+        width: 20%;
         transition: transform 0.5s;
         border: 10px double rgb(223, 165, 0);
       }
@@ -80,7 +80,7 @@
     <button onclick="fetchData()">☞ PLAY ☜</button>
 
     <canvas id="stockChart"></canvas>
-    
+
     <script src="https://unpkg.com/tone"></script>
     <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -183,6 +183,34 @@
           }
         });
       }
+
+      document.body.addEventListener("click", () => {
+        Tone.start();
+      });
+
+      const osc = new Tone.Oscillator(440, 'sine').start();
+      const effect = new Tone.Gain(1).toDestination();
+      osc.connect(effect);
+
+      const stockEffects = {
+        "AAPL": new Tone.FeedbackDelay("8n", 0.5),
+        "TSLA": new Tone.Distortion(0.4),
+        "MSFT": new Tone.AutoFilter("4n"),
+        "AMZN": new Tone.AutoPanner("4n"),
+        "GOOG": new Tone.BitCrusher(4),
+      };
+
+      function applyStockEffect(stockSymbol) {
+        osc.disconnect();
+
+        let effect = stockEffects[stockSymbol]
+        osc.connect(effect.toDestination());
+      }
+
+      document.getElementById("stockSelect").addEventListener("change", (event) => {
+        const stockSymbol = event.target.value;
+        applyStockEffect(stockSymbol);
+      });
     </script>
   </body>
 </html>
