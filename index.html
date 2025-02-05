@@ -51,9 +51,9 @@
       h1 {
         text-decoration: double underline;
         color: red;
-        font-size: 5vw;
+        font-size: 4vw;
       }
-      
+
       div {
         color: gold;
         font-size: 2vw;
@@ -83,7 +83,7 @@
 
     <canvas id="chart"></canvas>
     <div id="moneycount"></div>
-  <img src="bigmoney.gif" class="dollars">
+    <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <script src="https://unpkg.com/tone"></script>
@@ -227,15 +227,22 @@
         }),
       };
 
+      let playInterval = null;
+
       function newEffect(symbol) {
         synth.disconnect();
         let effect = effects[symbol];
         synth.connect(effect.toDestination());
 
         let index = 0;
-        const interval = setInterval(() => {
+        if (playInterval) {
+          clearInterval(playInterval);
+          playInterval = null;
+        }
+        
+        playInterval = setInterval(() => {
           if (index >= storedPrices.length) {
-            clearInterval(interval);
+            clearInterval(playInterval);
             return;
           }
 
