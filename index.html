@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$PLAY THE MARKET$</title>
+    <title>$$$PLAY THE MARKET$$$</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
@@ -56,7 +56,7 @@
 
       div {
         color: gold;
-        font-size: 2vw;
+        font-size: 3vw;
       }
 
       .dollars {
@@ -80,9 +80,9 @@
       <option value="GOOG">Google (GOOG)</option>
     </select>
     <button id="play" onclick="fetchData()">☞ PLAY ☜</button>
+        <div id="moneycount"></div>
 
     <canvas id="chart"></canvas>
-    <div id="moneycount"></div>
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
@@ -113,7 +113,7 @@
             updateChart(timestamps, prices, symbol);
           }
         } catch (error) {
-          alert("Failed to fetch data.");
+          alert("Failed to fetch data");
         }
       }
 
@@ -239,7 +239,7 @@
           clearInterval(playInterval);
           playInterval = null;
         }
-        
+
         playInterval = setInterval(() => {
           if (index >= storedPrices.length) {
             clearInterval(playInterval);
@@ -247,15 +247,24 @@
           }
 
           let price = storedPrices[index];
+          highlightChartPoint(index);
           document.getElementById("moneycount").textContent = '$' + price.toString().slice(0, 6);
           let freq = price * 1.5;
           let dur = 1;
-
           synth.triggerAttackRelease(freq, dur);
           index++;
         }, 1000);
       }
+      
+      //i asked chatgpt for help with this
+      function highlightChartPoint(index) {
+        let dataset = chart.data.datasets[0];
+        dataset.pointBackgroundColor = dataset.data.map(() => "rgba(255, 255, 255, 0.1)");
+        dataset.pointBackgroundColor[index] = "rgb(255, 255, 0)";
 
+        chart.update();
+      }
+      
       document.getElementById("play").addEventListener("click", (event) => {
         const symbol = document.getElementById("select").value;
         newEffect(symbol);
