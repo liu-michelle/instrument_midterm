@@ -69,17 +69,17 @@
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <br>
-    <label for="stockSelect">CHOOSE A STOCK:</label>
-    <select id="stockSelect">
+    <label for="select">CHOOSE A STOCK:</label>
+    <select id="select">
       <option value="AAPL">Apple (AAPL)</option>
       <option value="TSLA">Tesla (TSLA)</option>
       <option value="MSFT">Microsoft (MSFT)</option>
       <option value="AMZN">Amazon (AMZN)</option>
       <option value="GOOG">Google (GOOG)</option>
     </select>
-    <button onclick="fetchData()">☞ PLAY ☜</button>
+    <button id="play" onclick="fetchData()">☞ PLAY ☜</button>
 
-    <canvas id="stockChart"></canvas>
+    <canvas id="chart"></canvas>
 
     <script src="https://unpkg.com/tone"></script>
     <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js?v=1"></script>
@@ -91,9 +91,9 @@
       let storedData = [];
 
       async function fetchData() {
-        const stockSymbol = document.getElementById("stockSelect").value;
+        const symbol = document.getElementById("select").value;
         const corsProxy = "https://corsproxy.io/?";
-        const yahooURL = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}?interval=1d&range=3mo`;
+        const yahooURL = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=3mo`;
 
         try {
           const response = await fetch(corsProxy + yahooURL);
@@ -104,14 +104,14 @@
             const timestamps = result.timestamp;
             const prices = result.indicators.quote[0].close;
 
-            updateChart(timestamps, prices, stockSymbol);
+            updateChart(timestamps, prices, symbol);
           }
         } catch (error) {
-          alert("Failed to fetch data. Check your internet connection.");
+          alert("Failed to fetch data.");
         }
       }
 
-      function getColor(stock, prices, alpha = 1) {
+      function getColor(stock, prices) {
         const colors = {
           "AAPL": `rgb(235, 52, 67)`,
           "TSLA": `rgb(52, 216, 235)`,
@@ -120,15 +120,14 @@
           "GOOG": `rgb(43, 204, 18)`,
         };
 
-
         if (colors[stock]) {
           return colors[stock];
         }
       }
 
-      function updateChart(timestamps, prices, stockSymbol) {
-        const labels = timestamps.map(ts => new Date(ts * 1000).toLocaleDateString());
-        const ctx = document.getElementById('stockChart').getContext('2d');
+      function updateChart(timestamps, prices, symbol) {
+        const labels = timestamps.map(time => new Date(time * 1000).toLocaleDateString());
+        const ctx = document.getElementById('chart').getContext('2d');
         if (chart) chart.destroy();
 
         chart = new Chart(ctx, {
@@ -136,9 +135,9 @@
           data: {
             labels: labels,
             datasets: [{
-              label: `${stockSymbol} Closing Price`,
+              label: `${symbol} Price`,
               data: prices,
-              borderColor: getColor(stockSymbol, prices),
+              borderColor: getColor(symbol, prices),
               fill: false,
             }]
           },
@@ -179,20 +178,26 @@
                   color: 'white'
                 }
               }
-            }
+            },
+    animations: {
+      tension: {
+        duration: 1000,
+        easing: 'linear',
+        from: 1,
+        to: 0,
+        loop: true
+      }
+    },
           }
         });
       }
 
-      document.body.addEventListener("click", () => {
-        Tone.start();
-      });
-
-      const osc = new Tone.Oscillator(440, 'sine').start();
+      const osc = new Tone.Oscillator(440, 'sine');
+      //     osc.start();
       const effect = new Tone.Gain(1).toDestination();
       osc.connect(effect);
 
-      const stockEffects = {
+      const effects = {
         "AAPL": new Tone.FeedbackDelay("8n", 0.5),
         "TSLA": new Tone.Distortion(0.4),
         "MSFT": new Tone.AutoFilter("4n"),
@@ -200,16 +205,16 @@
         "GOOG": new Tone.BitCrusher(4),
       };
 
-      function applyStockEffect(stockSymbol) {
+      function newEffect(symbol) {
         osc.disconnect();
 
-        let effect = stockEffects[stockSymbol]
+        let effect = effects[symbol]
         osc.connect(effect.toDestination());
       }
 
-      document.getElementById("stockSelect").addEventListener("change", (event) => {
-        const stockSymbol = event.target.value;
-        applyStockEffect(stockSymbol);
+      document.getElementById("play").addEventListener("click", (event) => {
+        const symbol = document.getElementById("select").value;
+        newEffect(symbol);
       });
     </script>
   </body>
