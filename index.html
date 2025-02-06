@@ -66,6 +66,15 @@
         transition: transform 0.5s;
         border: 10px double rgb(223, 165, 0);
       }
+      
+      .slider {
+        color: white;
+        font-size: 2vw;
+      }
+      .slider:hover {
+        text-decoration: underline;
+        color: red;
+      }
     </style>
   </head>
   <body>
@@ -79,10 +88,14 @@
       <option value="AMZN">Amazon (AMZN)</option>
       <option value="GOOG">Google (GOOG)</option>
     </select>
-    <button id="play" onclick="fetchData()">☞ PLAY ☜</button>
+    <button id="play" onclick="fetchData()">☞ PLAY ☜</button>   
         <div id="moneycount"></div>
 
     <canvas id="chart"></canvas>
+     <div class="slider">
+  <label for="speed">☞ SPEED:</label>
+<input type="range" id="speed" min="100" max="2000" value="1000" step="100">
+    </div>
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
     <img src="bigmoney.gif" class="dollars">
@@ -94,6 +107,7 @@
     <script>
       let chart;
       let storedPrices = [];
+      let index = 0;
 
       async function fetchData() {
         const symbol = document.getElementById("select").value;
@@ -239,23 +253,40 @@
           clearInterval(playInterval);
           playInterval = null;
         }
-
+        startInterval();
+      }
+      
+      function startInterval() {
+        let delay = parseInt(speed.max, 10) + parseInt(speed.min, 10) - parseInt(speed.value, 10);
         playInterval = setInterval(() => {
           if (index >= storedPrices.length) {
             clearInterval(playInterval);
+            playInterval = null;
             return;
           }
-
           let price = storedPrices[index];
           highlightChartPoint(index);
-          document.getElementById("moneycount").textContent = '$' + price.toString().slice(0, 6);
+          document.getElementById("moneycount").textContent =
+            "$" + price.toString().slice(0, 6);
           let freq = price * 1.5;
           let dur = 1;
           synth.triggerAttackRelease(freq, dur);
           index++;
-        }, 1000);
+        }, delay);
       }
       
+      speed.addEventListener("input", () => {
+        if (playInterval !== null) {
+          restartInterval();
+        }
+      });
+      
+      function restartInterval() {
+        if (playInterval !== null) {
+          clearInterval(playInterval);
+          startInterval();
+        }
+      }
       //i asked chatgpt for help with this
       function highlightChartPoint(index) {
         let dataset = chart.data.datasets[0];
